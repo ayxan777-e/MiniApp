@@ -27,7 +27,8 @@ public class DiningTableConfiguration : IEntityTypeConfiguration<DiningTable>
 
         builder.HasMany(dt => dt.Reservations)
             .WithOne(rs => rs.DiningTable)
-            .HasForeignKey(rs => rs.DiningTableId);
+            .HasForeignKey(rs => rs.DiningTableId)
+            .OnDelete(DeleteBehavior.Restrict);
 
     }
 }
