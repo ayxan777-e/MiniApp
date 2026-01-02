@@ -3,109 +3,281 @@ using MiniApp.Data.Entities;
 using MiniApp.DTOs;
 using MiniApp.Validation;
 
+ var _context = new AppDbContext();
 
-Console.WriteLine("Restaurant + Table + Reservation yaradilir");
-
-// ===== RESTAURANT =====
-Console.Write("Restaurant adi: ");
-var rName = Console.ReadLine();
-
-Console.Write("Seher: ");
-var rCity = Console.ReadLine();
-
-var restaurantDto = new CreateRestaurantRequest
+while (true)
 {
-    Name = rName!,
-    City = rCity!
-};
+    Console.WriteLine("===== MAIN MENU =====");
+    Console.WriteLine("1. Restaurant");
+    Console.WriteLine("2. DiningTable");
+    Console.WriteLine("3. Reservation");
+    Console.WriteLine("0. Exit");
 
-var rValidator = new CreateRestaurantRequestValidation();
-if (!rValidator.Validate(restaurantDto).IsValid)
-{
-    foreach (var error in rValidator.Validate(restaurantDto).Errors)
+    Console.Write("Secim: ");
+    var mainChoice = Console.ReadLine();
+
+    if (mainChoice == "0")
+        break;
+
+    // ================= RESTAURANT MENU =================
+    if (mainChoice == "1")
     {
-        Console.WriteLine(error.ErrorMessage);
+        Console.WriteLine("1. Add restaurant");
+        Console.WriteLine("2. List restaurants");
+        Console.WriteLine("3. Delete restaurant");
+
+        var choice = Console.ReadLine();
+
+        if (choice == "1")
+        {
+            #region Restaurant CREATE
+            Console.Write("Restaurant adi: ");
+            var rName = Console.ReadLine();
+
+            Console.Write("Seher: ");
+            var rCity = Console.ReadLine();
+
+            var restaurantDto = new CreateRestaurantRequest
+            {
+                Name = rName!,
+                City = rCity!
+            };
+
+            var rValidator = new CreateRestaurantRequestValidation();
+            if (!rValidator.Validate(restaurantDto).IsValid)
+            {
+                foreach (var error in rValidator.Validate(restaurantDto).Errors)
+                    Console.WriteLine(error.ErrorMessage);
+                continue;
+            }
+
+            var restaurant = new Restaurant
+            {
+                Name = restaurantDto.Name,
+                City = restaurantDto.City
+            };
+
+            _context.Restaurants.Add(restaurant);
+            _context.SaveChanges();
+            #endregion
+        }
+
+        else if (choice == "2")
+        {
+            #region Restaurant LIST
+            var restaurants = _context.Restaurants.ToList();
+            foreach (var item in restaurants)
+                Console.WriteLine($"{item.Id} -- {item.Name} in {item.City}");
+            #endregion
+        }
+
+        else if (choice == "3")
+        {
+            #region Restaurant DELETE
+            Console.Write("Restaurant ID daxil edin: ");
+            var restaurantId = int.Parse(Console.ReadLine()!);
+
+            var removable = _context.Restaurants.Find(restaurantId);
+            if (removable is null)
+            {
+                Console.WriteLine("Restaurant tapilmadi.");
+                continue;
+            }
+
+            _context.Restaurants.Remove(removable);
+            _context.SaveChanges();
+            Console.WriteLine("Restaurant silindi.");
+            #endregion
+        }
     }
-    return;
+
+    // ================= DINING TABLE MENU =================
+    else if (mainChoice == "2")
+    {
+        Console.WriteLine("1. Add DiningTable");
+        Console.WriteLine("2. List DiningTables by restaurant");
+
+        var choice = Console.ReadLine();
+
+        if (choice == "1")
+        {
+            #region DiningTable CREATE
+            var restaurants = _context.Restaurants.ToList();
+            foreach (var r in restaurants)
+                Console.WriteLine($"{r.Id}. {r.Name}");
+
+            Console.Write("Restaurant Id secin: ");
+            var restaurantId = int.Parse(Console.ReadLine()!);
+
+            Console.Write("Masa nomresi: ");
+            var tableNo = Console.ReadLine();
+
+            Console.Write("Capacity: ");
+            var capacity = int.Parse(Console.ReadLine()!);
+
+            var dto = new CreateDiningTableRequest
+            {
+                RestaurantId = restaurantId,
+                DiningTableNumber = tableNo!,
+                Capacity = capacity
+            };
+
+            var validator = new CreateDiningTableRequestValidation();
+            if (!validator.Validate(dto).IsValid)
+            {
+                foreach (var e in validator.Validate(dto).Errors)
+                    Console.WriteLine(e.ErrorMessage);
+                continue;
+            }
+
+            var table = new DiningTable
+            {
+                RestaurantId = dto.RestaurantId,
+                DiningTableNumber = dto.DiningTableNumber,
+                Capacity = dto.Capacity
+            };
+
+            _context.DiningTables.Add(table);
+            _context.SaveChanges();
+            #endregion
+        }
+
+        else if (choice == "2")
+        {
+            #region DiningTable LIST
+            Console.Write("Restaurant Id daxil edin: ");
+            var id = int.Parse(Console.ReadLine()!);
+
+            var tables = _context.DiningTables
+                .Where(dt => dt.RestaurantId == id)
+                .ToList();
+
+            foreach (var t in tables)
+                Console.WriteLine($"{t.Id} - {t.DiningTableNumber} ({t.Capacity})");
+            #endregion
+        }
+    }
+
+    // ================= RESERVATION MENU =================
+    else if (mainChoice == "3")
+    {
+        Console.WriteLine("1. Create reservation");
+        Console.WriteLine("2. List reservations by restaurant");
+        Console.WriteLine("3. Update reservation");
+        Console.WriteLine("4. Cancel reservation");
+
+        var choice = Console.ReadLine();
+
+        if (choice == "1")
+        {
+            #region CREATE RESERVATION
+            Console.Write("Restaurant Id: ");
+            var restaurantId = int.Parse(Console.ReadLine()!);
+
+            Console.Write("DiningTable Id: ");
+            var diningTableId = int.Parse(Console.ReadLine()!);
+
+            Console.Write("Customer name: ");
+            var customerName = Console.ReadLine();
+
+            Console.Write("Guest count: ");
+            var guestCount = int.Parse(Console.ReadLine()!);
+
+            Console.Write("Reservation date: ");
+            var reservationDate = DateTime.Parse(Console.ReadLine()!);
+
+            var dto = new CreateReservationRequest
+            {
+                RestaurantId = restaurantId,
+                DiningTableId = diningTableId,
+                CustomerName = customerName!,
+                GuestCount = guestCount,
+                ReservationDate = reservationDate
+            };
+
+            var validator = new CreateReservationRequestValidator();
+            if (!validator.Validate(dto).IsValid)
+            {
+                foreach (var e in validator.Validate(dto).Errors)
+                    Console.WriteLine(e.ErrorMessage);
+                continue;
+            }
+
+            _context.Reservations.Add(new Reservation
+            {
+                RestaurantId = dto.RestaurantId,
+                DiningTableId = dto.DiningTableId,
+                CustomerName = dto.CustomerName,
+                GuestCount = dto.GuestCount,
+                ReservationDate = dto.ReservationDate
+            });
+
+            _context.SaveChanges();
+            #endregion
+        }
+
+        else if (choice == "2")
+        {
+            #region LIST RESERVATIONS
+            Console.Write("Restaurant Id: ");
+            var rid = int.Parse(Console.ReadLine()!);
+
+            var reservations = _context.Reservations
+                .Where(r => r.RestaurantId == rid)
+                .ToList();
+
+            foreach (var r in reservations)
+                Console.WriteLine($"{r.Id} | {r.CustomerName} | {r.ReservationDate}");
+            #endregion
+        }
+
+        else if (choice == "3")
+        {
+            #region UPDATE RESERVATION
+            Console.Write("Reservation Id: ");
+            var id = int.Parse(Console.ReadLine()!);
+
+            var res = _context.Reservations.Find(id);
+            if (res == null)
+            {
+                Console.WriteLine("Tapilmadi.");
+                continue;
+            }
+
+            Console.Write("Yeni tarix: ");
+            res.ReservationDate = DateTime.Parse(Console.ReadLine()!);
+
+            Console.Write("Yeni guest count: ");
+            res.GuestCount = int.Parse(Console.ReadLine()!);
+
+            _context.SaveChanges();
+            #endregion
+        }
+
+        else if (choice == "4")
+        {
+            #region CANCEL RESERVATION
+            Console.Write("Reservation Id: ");
+            var id = int.Parse(Console.ReadLine()!);
+
+            var res = _context.Reservations.Find(id);
+            if (res == null)
+            {
+                Console.WriteLine("Tapilmadi.");
+                continue;
+            }
+
+            _context.Reservations.Remove(res);
+            _context.SaveChanges();
+            #endregion
+        }
+    }
+
+    Console.WriteLine();
 }
 
-var context = new AppDbContext();
-var restaurant = new Restaurant { Name = restaurantDto.Name, City = restaurantDto.City };
-context.Restaurants.Add(restaurant);
-context.SaveChanges();
 
-// ===== DINING TABLE =====
-Console.Write("Masa nomresi: ");
-var tableNo = Console.ReadLine();
 
-Console.Write("Capacity: ");
-var capacity = int.Parse(Console.ReadLine()!);
 
-var tableDto = new CreateDiningTableRequest
-{
-    RestaurantId = restaurant.Id,
-    DiningTableNumber = tableNo!,
-    Capacity = capacity
-};
 
-var tValidator = new CreateDiningTableRequestValidation();
-if (!tValidator.Validate(tableDto).IsValid)
-{
-    foreach (var error in tValidator.Validate(tableDto).Errors)
-    {
-        Console.WriteLine(error.ErrorMessage);
-    }
-    return;
-}
 
-var table = new DiningTable
-{
-    RestaurantId = restaurant.Id,
-    DiningTableNumber = tableDto.DiningTableNumber,
-    Capacity = tableDto.Capacity
-};
-context.DiningTables.Add(table);
-context.SaveChanges();
-
-// ===== RESERVATION =====
-Console.Write("Customer adi: ");
-var customer = Console.ReadLine();
-
-Console.Write("Guest count: ");
-var guests = int.Parse(Console.ReadLine()!);
-
-Console.Write("Reservation date : ");
-var date = DateTime.Parse(Console.ReadLine()!);
-
-var reservationDto = new CreateReservationRequest
-{
-    RestaurantId = restaurant.Id,
-    DiningTableId = table.Id,
-    CustomerName = customer!,
-    GuestCount = guests,
-    ReservationDate = date
-};
-
-var resValidator = new CreateReservationRequestValidation();
-if (!resValidator.Validate(reservationDto).IsValid)
-{
-    foreach (var error in resValidator.Validate(reservationDto).Errors)
-    {
-        Console.WriteLine(error.ErrorMessage);
-    }
-    return;
-}
-
-var reservation = new Reservation
-{
-    RestaurantId = restaurant.Id,
-    DiningTableId = table.Id,
-    CustomerName = reservationDto.CustomerName,
-    GuestCount = reservationDto.GuestCount,
-    ReservationDate = reservationDto.ReservationDate
-};
-
-context.Reservations.Add(reservation);
-context.SaveChanges();
-
-Console.WriteLine("Her 3-u ugurla yaradildi.");
