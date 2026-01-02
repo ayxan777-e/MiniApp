@@ -195,7 +195,7 @@ while (true)
                 ReservationDate = reservationDate
             };
 
-            var validator = new CreateReservationRequestValidator();
+            var validator = new CreateReservationRequestValidation();
             if (!validator.Validate(dto).IsValid)
             {
                 foreach (var e in validator.Validate(dto).Errors)
