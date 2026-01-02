@@ -11,6 +11,12 @@ public class AppDbContext : DbContext
         optionsBuilder.UseSqlServer(
             "Server=.;Database=MiniAppDb;Trusted_Connection=True;TrustServerCertificate=True;");
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
     public DbSet<Restaurant> Restaurants { get; set; } = null!;
     public DbSet<DiningTable> DiningTables { get; set; } = null!;
     public DbSet<Reservation> Reservations { get; set; } = null!;
