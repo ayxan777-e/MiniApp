@@ -1,4 +1,4 @@
-﻿namespace MiniApp.DTOs;
+﻿namespace MiniApp.DTOs.RestaurantDto;
 
 public class CreateRestaurantRequest
 {

@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using MiniApp.DTOs;
+using MiniApp.DTOs.RestaurantDto;
 
 namespace MiniApp.Validation;
 

@@ -1,6 +1,10 @@
 ﻿using MiniApp.Data.Context;
 using MiniApp.Data.Entities;
 using MiniApp.DTOs;
+using MiniApp.DTOs.DiningTableDto;
+using MiniApp.DTOs.ReservationDate;
+using MiniApp.DTOs.RestaurantDto;
+using MiniApp.Migrations;
 using MiniApp.Validation;
 
  var _context = new AppDbContext();
@@ -122,7 +126,7 @@ while (true)
                 Capacity = capacity
             };
 
-            var validator = new CreateDiningTableRequestValidation();
+            var validator = new CreateDiningTableRequestValidation(_context);
             if (!validator.Validate(dto).IsValid)
             {
                 foreach (var e in validator.Validate(dto).Errors)
@@ -184,7 +188,14 @@ while (true)
             var guestCount = int.Parse(Console.ReadLine()!);
 
             Console.Write("Reservation date: ");
-            var reservationDate = DateTime.Parse(Console.ReadLine()!);
+            var dateInput = Console.ReadLine();
+
+
+            if (!DateTime.TryParse(dateInput, out DateTime reservationDate))
+            {
+                Console.WriteLine("Reservation date bos ola bilmez ve duzgun formatda olmalidir.");
+                return; // və ya continue (menu varsa)
+            }
 
             var dto = new CreateReservationRequest
             {
@@ -222,12 +233,27 @@ while (true)
             Console.Write("Restaurant Id: ");
             var rid = int.Parse(Console.ReadLine()!);
 
+            if (!_context.Restaurants.Any(r => r.Id == rid))
+            {
+                Console.WriteLine("Restaurant tapilmadi.");
+                continue;
+            }
+
+
             var reservations = _context.Reservations
                 .Where(r => r.RestaurantId == rid)
                 .ToList();
 
-            foreach (var r in reservations)
-                Console.WriteLine($"{r.Id} | {r.CustomerName} | {r.ReservationDate}");
+            if(!reservations.Any())
+            {
+                Console.WriteLine($"Bu restaurantda hec bir reservation yoxdur");
+            }
+            else
+            {
+
+                foreach (var r in reservations)
+                    Console.WriteLine($" Id:{r.Id} , CustomerName: {r.CustomerName} , Date: {r.ReservationDate}");
+            }
             #endregion
         }
 
