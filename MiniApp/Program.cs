@@ -7,7 +7,7 @@ using MiniApp.DTOs.RestaurantDto;
 using MiniApp.Migrations;
 using MiniApp.Validation;
 
- var _context = new AppDbContext();
+var _context = new AppDbContext();
 
 while (true)
 {
@@ -78,19 +78,25 @@ while (true)
         else if (choice == "3")
         {
             #region Restaurant DELETE
-            Console.Write("Restaurant ID daxil edin: ");
+
+            var restaurants = _context.Restaurants.ToList();
+            Console.WriteLine("Available Restaurants:");
+            foreach (var r in restaurants)
+                Console.WriteLine($"{r.Id}. {r.Name}");
+
+            Console.Write("Enter Restaurant ID: ");
             var restaurantId = int.Parse(Console.ReadLine()!);
 
             var removable = _context.Restaurants.Find(restaurantId);
             if (removable is null)
             {
-                Console.WriteLine("Restaurant tapilmadi.");
+                Console.WriteLine("Not Founded Restaurant.");
                 continue;
             }
 
             _context.Restaurants.Remove(removable);
             _context.SaveChanges();
-            Console.WriteLine("Restaurant silindi.");
+            Console.WriteLine("Deleted Restaurant.");
             #endregion
         }
     }
@@ -110,10 +116,10 @@ while (true)
             foreach (var r in restaurants)
                 Console.WriteLine($"{r.Id}. {r.Name}");
 
-            Console.Write("Restaurant Id secin: ");
+            Console.Write("Choose Restaurant Id: ");
             var restaurantId = int.Parse(Console.ReadLine()!);
 
-            Console.Write("Masa nomresi: ");
+            Console.Write("DiningTableNumber: ");
             var tableNo = Console.ReadLine();
 
             Console.Write("Capacity: ");
@@ -149,7 +155,12 @@ while (true)
         else if (choice == "2")
         {
             #region DiningTable LIST
-            Console.Write("Restaurant Id daxil edin: ");
+            var restaurants = _context.Restaurants.ToList();
+            Console.WriteLine("Available Restaurants:");
+            foreach (var r in restaurants)
+                Console.WriteLine($"{r.Id}. {r.Name}");
+
+            Console.Write("Enter Restaurant Id: ");
             var id = int.Parse(Console.ReadLine()!);
 
             var tables = _context.DiningTables
@@ -175,6 +186,13 @@ while (true)
         if (choice == "1")
         {
             #region CREATE RESERVATION
+
+            var restaurants = _context.Restaurants.ToList();
+            Console.WriteLine("Available Restaurants:");
+            foreach (var r in restaurants)
+                Console.WriteLine($"{r.Id}. {r.Name}");
+
+
             Console.Write("Restaurant Id: ");
             var restaurantId = int.Parse(Console.ReadLine()!);
 
@@ -230,12 +248,18 @@ while (true)
         else if (choice == "2")
         {
             #region LIST RESERVATIONS
+
+            var restaurants = _context.Restaurants.ToList();
+            Console.WriteLine("Available Restaurants:");
+            foreach (var r in restaurants)
+                Console.WriteLine($"{r.Id}. {r.Name}");
+
             Console.Write("Restaurant Id: ");
             var rid = int.Parse(Console.ReadLine()!);
 
             if (!_context.Restaurants.Any(r => r.Id == rid))
             {
-                Console.WriteLine("Restaurant tapilmadi.");
+                Console.WriteLine("Not Found Restaurant.");
                 continue;
             }
 
@@ -244,7 +268,7 @@ while (true)
                 .Where(r => r.RestaurantId == rid)
                 .ToList();
 
-            if(!reservations.Any())
+            if (!reservations.Any())
             {
                 Console.WriteLine($"Bu restaurantda hec bir reservation yoxdur");
             }
@@ -266,14 +290,14 @@ while (true)
             var res = _context.Reservations.Find(id);
             if (res == null)
             {
-                Console.WriteLine("Tapilmadi.");
+                Console.WriteLine("Not Founded.");
                 continue;
             }
 
-            Console.Write("Yeni tarix: ");
+            Console.Write("New Date: ");
             res.ReservationDate = DateTime.Parse(Console.ReadLine()!);
 
-            Console.Write("Yeni guest count: ");
+            Console.Write("New guest count: ");
             res.GuestCount = int.Parse(Console.ReadLine()!);
 
             _context.SaveChanges();
@@ -283,13 +307,19 @@ while (true)
         else if (choice == "4")
         {
             #region CANCEL RESERVATION
+
+            var restaurants = _context.Restaurants.ToList();
+            Console.WriteLine("Available Restaurants:");
+            foreach (var r in restaurants)
+                Console.WriteLine($"{r.Id}. {r.Name}");
+
             Console.Write("Reservation Id: ");
             var id = int.Parse(Console.ReadLine()!);
 
             var res = _context.Reservations.Find(id);
             if (res == null)
             {
-                Console.WriteLine("Tapilmadi.");
+                Console.WriteLine("Not Founded.");
                 continue;
             }
 
